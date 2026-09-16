@@ -10,3 +10,6 @@ wheels/
 .venv
 tests/
 .env
+
+uploaded_files/
+dummy.py
