@@ -4,7 +4,6 @@ from doc_query_api.models import Document
 from fastapi import UploadFile
 from pathlib import Path
 from doc_processor.scanx import Scanner
-
 import asyncio
 
 async def get_file_content(f_path:Path):
@@ -38,9 +37,10 @@ async def create_document(session:AsyncSession,filename:str,content:str,word_cou
     
 
 async def delete_document(session:AsyncSession,doc_id:int):
-    query= delete(Document).where(Document.id==doc_id).returning()
-    deleted_doc=await session.execute(query)
-    return deleted_doc
+    query= delete(Document).where(Document.id==doc_id).returning(Document)
+    result=await session.execute(query)
+    doc=result.scalar_one_or_none()
+    return doc
 
 async def embed_document(session:AsyncSession,id:int,embed:list[float]):
     select_query=(select(Document).where(Document.id==id))
