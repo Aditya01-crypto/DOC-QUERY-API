@@ -37,15 +37,29 @@ async def create_document(session:AsyncSession,filename:str,content:str,word_cou
     return doc
     
 
-
 async def delete_document(session:AsyncSession,doc_id:int):
-    query= select(Document.id==)
+    query= delete(Document).where(Document.id==doc_id).returning()
+    deleted_doc=await session.execute(query)
+    return deleted_doc
 
 async def embed_document(session:AsyncSession,id:int,embed:list[float]):
-    pass
+    select_query=(select(Document).where(Document.id==id))
+    result=await session.execute(select_query)
+    doc=result.scalar_one_or_none()
+    if doc:
+        doc.embedding=embed
+    await session.flush()
 
-async def query_document(session:AsyncSession,query_embedding:list[float]):
-    pass
+    return doc
+    
+
+async def query_document(session:AsyncSession,query_embedding:list[float],limit:int):
+    query=select(Document,Document.embedding.cosine_distance(query_embedding).label("distance")
+    ).where(Document.embedding.isnot(None)).order_by(Document.embedding).limit(limit)
+
+    results=await session.execute(query)
+
+    return results.scalars().all()
 
 if __name__ =="__main__":
     async def main():#testing some functions
