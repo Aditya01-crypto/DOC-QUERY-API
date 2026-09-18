@@ -113,26 +113,12 @@ wheels = [
 [[package]]
 name = "cli-document-processor"
 version = "0.1.0"
-source = { editable = "../CLI Document Processor" }
+source = { git = "https://github.com/Aditya01-crypto/CLI-Document-Processor.git#927345b98cfc25a3f62e5076da20d6df843881b7" }
 dependencies = [
     { name = "pydantic" },
     { name = "pypdf" },
     { name = "python-docx" },
     { name = "rich" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "pypdf", specifier = ">=6.15.0" },
-    { name = "python-docx", specifier = ">=1.2.0" },
-    { name = "rich", specifier = ">=15.0.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-asyncio", specifier = ">=1.4.0" },
 ]
 
 [[package]]
@@ -275,7 +261,7 @@ dependencies = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.20.0" },
     { name = "asyncpg", specifier = ">=0.31.0" },
-    { name = "cli-document-processor", editable = "../CLI Document Processor" },
+    { name = "cli-document-processor", git = "https://github.com/Aditya01-crypto/CLI-Document-Processor.git" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.141.1" },
     { name = "pgvector", specifier = ">=0.5.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.13" },

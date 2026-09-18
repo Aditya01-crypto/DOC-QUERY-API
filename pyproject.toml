@@ -28,4 +28,5 @@ build-backend = "hatchling.build"
 packages = ["src/doc_query_api"]
 
 [tool.uv.sources]
-cli-document-processor = { path = "../CLI Document Processor", editable = true }
+cli-document-processor = { git = "https://github.com/Aditya01-crypto/CLI-Document-Processor.git" }
+
