@@ -5,8 +5,7 @@ from doc_query_api.database import Base,engine
 from sqlalchemy import text
 from pathlib import Path
 from doc_query_api.routers.documents import router
-UPLOAD_DIR=Path("uploaded_files")
-UPLOAD_DIR.mkdir(exist_ok=True,parents=True)
+
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):

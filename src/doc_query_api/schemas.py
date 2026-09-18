@@ -8,7 +8,6 @@ class DocumentResponse(BaseModel):
     content:str
     word_count:int
     uploaded_at: datetime
-    # embedding: None | list[float]
 
     model_config=ConfigDict(
         from_attributes=True

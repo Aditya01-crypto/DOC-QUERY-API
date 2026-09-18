@@ -5,9 +5,13 @@ import doc_query_api.crud as crud
 from pathlib import Path
 import shutil
 from doc_query_api.schemas import DocumentResponse
-from doc_query_api.main import UPLOAD_DIR
 from math import ceil
+from doc_query_api.embeddings import generate_embedding
+
 router=APIRouter(tags=['documents'],prefix='/documents')
+
+UPLOAD_DIR=Path("uploaded_files")
+UPLOAD_DIR.mkdir(exist_ok=True,parents=True)
 
 #helper function check File object
 async def valid_file(file:UploadFile):
@@ -37,22 +41,21 @@ async def get_documents(limit:int=10,skip:int=0,db:AsyncSession=Depends(get_db))
 
     return docs
 
-@router.get('/{id}',response_model=DocumentResponse)
-async def get_document(id:int,db:AsyncSession=Depends(get_db)):
-    docs=await crud.show_document(session=db,id=id)
-    if not docs:
-        raise HTTPException(404,'No Documents Found')
-
-    return docs
+@router.get('/search',response_model=list[DocumentResponse])
+async def search_document(query:str,limit:int=5,db:AsyncSession=Depends(get_db)):
+    query_embedding= generate_embedding(query) #get embedding for query's content
+    result=await crud.query_document(db,query_embedding=query_embedding,limit=limit)
+    return result
 
 @router.post('/upload',response_model=DocumentResponse)
 async def add_document(db:AsyncSession=Depends(get_db),file:UploadFile=File(...)):
-    await valid_file(file)
-    filename=str(file.filename) #type: ignore
+    checked_file=await valid_file(file)
+    filename=str(checked_file.filename) #type: ignore
         
     file_path=UPLOAD_DIR/filename
+    await checked_file.seek(0)
     with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file,buffer)
+        shutil.copyfileobj(checked_file.file,buffer)
 
     content=await crud.get_file_content(f_path=file_path) 
     if not content:
@@ -65,7 +68,16 @@ async def add_document(db:AsyncSession=Depends(get_db),file:UploadFile=File(...)
         raise HTTPException(500,"Some Error in Server")
     return doc
 
-@router.delete('/{id}')
+@router.get('/{id}',response_model=DocumentResponse)
+async def get_document(id:int,db:AsyncSession=Depends(get_db)):
+    docs=await crud.show_document(session=db,id=id)
+    if not docs:
+        raise HTTPException(404,'No Documents Found')
+
+    return docs
+
+
+@router.delete('/{id}',response_model=DocumentResponse)
 async def remove_doc(id:int,db:AsyncSession=Depends(get_db)):
     doc=await crud.delete_document(session=db,doc_id=id)
     if not doc:
@@ -78,15 +90,10 @@ async def add_embedding(id:int,db:AsyncSession=Depends(get_db)):
     if not doc:
         raise HTTPException(404,"Document Not Found")
     # get embedding from document's content
-    embed=[]
+    embed=generate_embedding(doc.content)
     result=await crud.embed_document(db,id=id,embed=embed)
     if not result:
         raise HTTPException(500,"Internal Server Error")
     return {"Status":f"Document {id} successfully embedded"}
 
 
-@router.get('/search',response_model=list[DocumentResponse])
-async def search_document(query:str,limit:int=5,db:AsyncSession=Depends(get_db)):
-    query_embedding=[] #get embedding for query's content
-    result=await crud.query_document(db,query_embedding=query_embedding,limit=limit)
-    return result

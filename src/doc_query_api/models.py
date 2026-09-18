@@ -12,15 +12,15 @@ class Document(Base):
     content:Mapped[str]=mapped_column(Text,nullable=False)
     word_count:Mapped[int]=mapped_column(Integer,nullable=False)
     uploaded_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.now)
-    embedding:Mapped[list[float]]=mapped_column(Vector(1536),nullable=True)
+    embedding:Mapped[list[float]]=mapped_column(Vector(384),nullable=True)
 
     __table_args__=(
         Index(
             "ix_doc_embedding",
             "embedding",
             postgresql_using="hnsw",
-            postgres_with={'m':16,'ef_construction':64},
-            postgres_ops={"embedding":"vector_cosine_ops"},
-        )
+            postgresql_with={'m':16,'ef_construction':64},
+            postgresql_ops={"embedding":"vector_cosine_ops"},
+        ),
     )
 

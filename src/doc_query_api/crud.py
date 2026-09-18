@@ -9,12 +9,14 @@ import asyncio
 async def get_file_content(f_path:Path):
     text_data=None
     sc=Scanner(f_path.parent)
+    print(f_path)
+    print(f_path.suffix)
     if f_path.suffix=='.pdf':
         text_data=await sc.extract_pdf_text(f_path)
-    elif f_path.suffix =='.docx':
+    elif f_path.suffix == '.docx':
         text_data=await sc.extract_docx_text(f_path)
 
-    return text_data[:50] if type(text_data) is str and len(text_data)>0 else None
+    return text_data if type(text_data) is str and len(text_data)>0 else None
     
                        
 async def show_document(id:int,session:AsyncSession):
@@ -55,7 +57,7 @@ async def embed_document(session:AsyncSession,id:int,embed:list[float]):
 
 async def query_document(session:AsyncSession,query_embedding:list[float],limit:int):
     query=select(Document,Document.embedding.cosine_distance(query_embedding).label("distance")
-    ).where(Document.embedding.isnot(None)).order_by(Document.embedding).limit(limit)
+    ).where(Document.embedding.isnot(None)).order_by(Document.embedding.cosine_distance(query_embedding)).limit(limit)
 
     results=await session.execute(query)
 
