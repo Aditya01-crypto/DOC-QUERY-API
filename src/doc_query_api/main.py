@@ -5,7 +5,7 @@ from doc_query_api.database import Base,engine
 from sqlalchemy import text
 from pathlib import Path
 from doc_query_api.routers.documents import router
-
+import os
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -18,6 +18,8 @@ async def lifespan(app:FastAPI):
 app=FastAPI(lifespan=lifespan)
 app.include_router(router)
 def start():
+    host=os.getenv("HOST","0.0.0.0")
+    port=int(os.getenv("PORT",8000))
     uvicorn.run("doc_query_api.main:app", host="127.0.0.1", port=8000, reload=True)
 
 @app.get("/")
