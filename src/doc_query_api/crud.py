@@ -3,18 +3,17 @@ from sqlalchemy import select , delete
 from doc_query_api.models import Document
 from fastapi import UploadFile
 from pathlib import Path
-from doc_processor.scanx import Scanner
+from doc_query_api.extract import extract_docx_text, extract_pdf_text
 import asyncio
 
 async def get_file_content(f_path:Path):
     text_data=None
-    sc=Scanner(f_path.parent)
     print(f_path)
     print(f_path.suffix)
     if f_path.suffix=='.pdf':
-        text_data=await sc.extract_pdf_text(f_path)
+        text_data=await extract_pdf_text(f_path)
     elif f_path.suffix == '.docx':
-        text_data=await sc.extract_docx_text(f_path)
+        text_data=await extract_docx_text(f_path)
 
     return text_data if type(text_data) is str and len(text_data)>0 else None
     
