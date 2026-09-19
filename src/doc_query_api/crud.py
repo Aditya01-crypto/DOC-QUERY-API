@@ -3,19 +3,9 @@ from sqlalchemy import select , delete
 from doc_query_api.models import Document
 from fastapi import UploadFile
 from pathlib import Path
-from doc_query_api.extract import extract_docx_text, extract_pdf_text
+from doc_query_api.extract import get_file_content
 import asyncio
 
-async def get_file_content(f_path:Path):
-    text_data=None
-    print(f_path)
-    print(f_path.suffix)
-    if f_path.suffix=='.pdf':
-        text_data=await extract_pdf_text(f_path)
-    elif f_path.suffix == '.docx':
-        text_data=await extract_docx_text(f_path)
-
-    return text_data if type(text_data) is str and len(text_data)>0 else None
     
                        
 async def show_document(id:int,session:AsyncSession):
@@ -62,15 +52,5 @@ async def query_document(session:AsyncSession,query_embedding:list[float],limit:
 
     return results.scalars().all()
 
-if __name__ =="__main__":
-    async def main():#testing some functions
-        l=['src/doc_query_api/uploaded_files/a.pdf','src/doc_query_api/uploaded_files/c.pdf','src/doc_query_api/uploaded_files/p.docx','src/doc_query_api/uploaded_files/pc.odt']
-        r=[]
-        for p in l:
-            p=Path(p)
-            r.append(await get_file_content(p))
 
-        return r
-
-    print(asyncio.run(main()))
 

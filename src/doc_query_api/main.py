@@ -20,7 +20,7 @@ app.include_router(router)
 def start():
     host=os.getenv("HOST","0.0.0.0")
     port=int(os.getenv("PORT",8000))
-    uvicorn.run("doc_query_api.main:app", host=host, port=port, reload=True)
+    uvicorn.run("doc_query_api.main:app", host=host, port=port, reload=False)
 
 @app.get("/")
 def index():

@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+tests/
+.env
+meta.log
+
+uploaded_files/
+dummy.py
+.git
+.gitignore
+README.MD

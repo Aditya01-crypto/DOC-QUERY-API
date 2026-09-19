@@ -34,7 +34,7 @@ def log(log_path):# decorator to calculate elapsed time for each file
         return wrapper
     return decorator
     
-def sync_pdf_extract(f_path:Path)->str:
+def sync_pdf_extract(f_path:Path)->str|None:
     pages=[]
     try:
         reader=PdfReader(f_path)
@@ -44,30 +44,42 @@ def sync_pdf_extract(f_path:Path)->str:
                     pages.append(text)
     except Exception as e:
         print(f"Could n't process file  : {f_path.name}")
-        return str(e)
+        return 
     
     return "\n".join(pages)
 
-def sync_docx_extract(f_path:Path)->str:
+def sync_docx_extract(f_path:Path)->str|None:
     try:
         doc=Document(f_path)#type: ignore
         paragraphs=[p.text for p in doc.paragraphs if p.text.strip()]
     except Exception as e :
         print(f"Could n't process file  : {f_path.name}")
-        return str(e)
+        return 
     return "\n".join(paragraphs)
         
 
 @log('meta.log')
 @clean_text
-async def extract_pdf_text(f_path:Path)->str:
+async def extract_pdf_text(f_path:Path):
     loop=asyncio.get_running_loop()
     text_data=await loop.run_in_executor(None,sync_pdf_extract,f_path)
     return text_data
 
 @log('meta.log')
 @clean_text
-async def extract_docx_text(f_path:Path)->str:
+async def extract_docx_text(f_path:Path):
     loop=asyncio.get_running_loop()
     text_data=await loop.run_in_executor(None,sync_docx_extract,f_path)
     return text_data    
+
+
+async def get_file_content(f_path:Path):
+    text_data=None
+    print(f_path)
+    print(f_path.suffix)
+    if f_path.suffix=='.pdf':
+        text_data=await extract_pdf_text(f_path)
+    elif f_path.suffix == '.docx':
+        text_data=await extract_docx_text(f_path)
+
+    return text_data if type(text_data) is str and len(text_data)>0 else None

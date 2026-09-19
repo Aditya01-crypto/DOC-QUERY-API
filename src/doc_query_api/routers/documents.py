@@ -29,7 +29,7 @@ async def valid_file(file:UploadFile):
     size_mb=ceil(len(content)/1048576)
     if size_mb >10:
         raise HTTPException(400,"File size should be less than 10mb")
-
+    await file.seek(0)
     return file
 
 
@@ -41,7 +41,7 @@ async def get_documents(limit:int=10,skip:int=0,db:AsyncSession=Depends(get_db))
 
     return docs
 
-@router.get('/search',response_model=list[DocumentResponse])
+@router.post('/search',response_model=list[DocumentResponse])
 async def search_document(query:str,limit:int=5,db:AsyncSession=Depends(get_db)):
     query_embedding= generate_embedding(query) #get embedding for query's content
     result=await crud.query_document(db,query_embedding=query_embedding,limit=limit)
@@ -53,7 +53,6 @@ async def add_document(db:AsyncSession=Depends(get_db),file:UploadFile=File(...)
     filename=str(checked_file.filename) #type: ignore
         
     file_path=UPLOAD_DIR/filename
-    await checked_file.seek(0)
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(checked_file.file,buffer)
 
