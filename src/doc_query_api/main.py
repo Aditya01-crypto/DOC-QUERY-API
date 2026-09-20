@@ -6,6 +6,7 @@ from sqlalchemy import text
 from pathlib import Path
 from doc_query_api.routers.documents import router
 import os
+from doc_query_api.limiter import limiter
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -17,6 +18,7 @@ async def lifespan(app:FastAPI):
 
 app=FastAPI(lifespan=lifespan)
 app.include_router(router)
+app.state.limiter=limiter
 def start():
     host=os.getenv("HOST","0.0.0.0")
     port=int(os.getenv("PORT",8000))
@@ -35,7 +37,8 @@ def index():
             "upload": "POST /documents/upload",
             "embed": "POST /documents/{id}/embed",
             "search": "POST /documents/search",
-            "documents": "GET /documents"
+            "documents": "GET /documents",
+            "delete": "DELETE /documents"
         }
     }
 

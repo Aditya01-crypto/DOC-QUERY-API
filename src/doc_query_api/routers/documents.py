@@ -1,4 +1,4 @@
-from fastapi import APIRouter,HTTPException,Depends,UploadFile ,File
+from fastapi import APIRouter,HTTPException,Depends,UploadFile ,File,Request
 from doc_query_api.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import doc_query_api.crud as crud
@@ -8,7 +8,7 @@ from doc_query_api.schemas import DocumentResponse
 from math import ceil
 from doc_query_api.embeddings import generate_embedding
 from doc_query_api.extract import get_file_content
-
+from doc_query_api.limiter import limiter
 
 router=APIRouter(tags=['documents'],prefix='/documents')
 
@@ -44,13 +44,15 @@ async def get_documents(limit:int=10,skip:int=0,db:AsyncSession=Depends(get_db))
     return docs
 
 @router.post('/search',response_model=list[DocumentResponse])
-async def search_document(query:str,limit:int=5,db:AsyncSession=Depends(get_db)):
+@limiter.limit("10/minute")
+async def search_document(request:Request,query:str,limit:int=5,db:AsyncSession=Depends(get_db)):
     query_embedding= generate_embedding(query) #get embedding for query's content
     result=await crud.query_document(db,query_embedding=query_embedding,limit=limit)
     return result
 
 @router.post('/upload',response_model=DocumentResponse)
-async def add_document(db:AsyncSession=Depends(get_db),file:UploadFile=File(...)):
+@limiter.limit("10/minute")
+async def add_document(request:Request,db:AsyncSession=Depends(get_db),file:UploadFile=File(...)):
     checked_file=await valid_file(file)
     filename=str(checked_file.filename) #type: ignore
         
@@ -89,7 +91,8 @@ async def remove_doc(id:int,db:AsyncSession=Depends(get_db)):
     }
 
 @router.post('/{id}/embed')
-async def add_embedding(id:int,db:AsyncSession=Depends(get_db)):
+@limiter.limit("5/minute")
+async def add_embedding(request:Request,id:int,db:AsyncSession=Depends(get_db)):
     doc=await crud.show_document(id=id,session=db)
     if not doc:
         raise HTTPException(404,"Document Not Found")
