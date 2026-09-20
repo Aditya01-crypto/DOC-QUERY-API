@@ -3,7 +3,6 @@ from sqlalchemy import select , delete
 from doc_query_api.models import Document
 from fastapi import UploadFile
 from pathlib import Path
-from doc_query_api.extract import get_file_content
 import asyncio
 
     

@@ -7,6 +7,8 @@ import shutil
 from doc_query_api.schemas import DocumentResponse
 from math import ceil
 from doc_query_api.embeddings import generate_embedding
+from doc_query_api.extract import get_file_content
+
 
 router=APIRouter(tags=['documents'],prefix='/documents')
 
@@ -56,7 +58,7 @@ async def add_document(db:AsyncSession=Depends(get_db),file:UploadFile=File(...)
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(checked_file.file,buffer)
 
-    content=await crud.get_file_content(f_path=file_path) 
+    content=await get_file_content(f_path=file_path) 
     if not content:
         raise HTTPException(400,'No content found!')
 
@@ -76,12 +78,15 @@ async def get_document(id:int,db:AsyncSession=Depends(get_db)):
     return docs
 
 
-@router.delete('/{id}',response_model=DocumentResponse)
+@router.delete('/{id}')
 async def remove_doc(id:int,db:AsyncSession=Depends(get_db)):
     doc=await crud.delete_document(session=db,doc_id=id)
     if not doc:
         raise HTTPException(404,"Document Not Found")
-    return doc
+    return {
+        "Status":"Success",
+        "Message":f"Document with id {doc.id} successfully deleted "
+    }
 
 @router.post('/{id}/embed')
 async def add_embedding(id:int,db:AsyncSession=Depends(get_db)):
