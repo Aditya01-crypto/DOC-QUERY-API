@@ -719,7 +719,7 @@ This implementation focuses on the parts directly required by the project's arch
 
 Because this project generates embeddings locally using `sentence-transformers` rather than calling an external embedding API, it does not require an external API client such as `httpx` for embedding generation.
 
-Likewise, streaming responses and API rate limiting are outside the implemented scope of this version.
+Likewise, streaming responses is outside the implemented scope of this version.
 
 ---
 
